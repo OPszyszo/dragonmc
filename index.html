@@ -1,108 +1,150 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <title>DragonMC Panel Administracyjny</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #1e1e2f, #2c2c54);
-      color: #fff;
-    }
+<meta charset="UTF-8">
+<title>DragonMC Panel</title>
+<style>
+body {
+  margin:0;
+  font-family: 'Segoe UI', sans-serif;
+  background:#0f172a;
+  color:#e2e8f0;
+}
 
-    .login-container, .panel {
-      max-width: 400px;
-      margin: 100px auto;
-      padding: 30px;
-      background: rgba(0,0,0,0.6);
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    }
+.container {
+  max-width:500px;
+  margin:80px auto;
+  padding:25px;
+  background:#1e293b;
+  border-radius:16px;
+  box-shadow:0 0 25px rgba(0,0,0,0.6);
+}
 
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+h2 {text-align:center;}
 
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 8px;
-    }
+input, button {
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+  border-radius:8px;
+  border:none;
+}
 
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #ff4757;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
+button {
+  background:#22c55e;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
 
-    button:hover {
-      background: #ff6b81;
-    }
+button:hover {background:#4ade80;}
 
-    .panel {
-      display: none;
-      max-width: 600px;
-    }
+.panel {display:none;}
 
-    .server-info {
-      margin-top: 20px;
-    }
+.role {
+  margin-top:10px;
+  padding:8px;
+  border-radius:8px;
+  background:#334155;
+}
 
-    .logout {
-      margin-top: 20px;
-      background: #57606f;
-    }
-  </style>
+.player-list {
+  margin-top:15px;
+  background:#020617;
+  padding:10px;
+  border-radius:10px;
+}
+
+.logout {background:#ef4444;}
+</style>
 </head>
 <body>
 
-<div class="login-container" id="loginBox">
+<div class="container" id="loginBox">
   <h2>🐉 DragonMC Login</h2>
-  <input type="text" id="username" placeholder="Login">
-  <input type="password" id="password" placeholder="Hasło">
-  <button onclick="login()">Zaloguj się</button>
+  <input id="username" placeholder="Login">
+  <input id="password" type="password" placeholder="Hasło">
+  <button onclick="login()">Zaloguj</button>
 </div>
 
-<div class="panel" id="adminPanel">
-  <h2>Panel Administracyjny DragonMC</h2>
-  <div class="server-info">
-    <p>Status serwera: <b>Online</b></p>
-    <p>Liczba graczy: <b>42</b></p>
-    <p>TPS: <b>19.8</b></p>
+<div class="container panel" id="panel">
+  <h2>Panel DragonMC</h2>
+  <div id="roleBox" class="role"></div>
+
+  <div id="status"></div>
+
+  <div class="player-list">
+    <b>Gracze online:</b>
+    <ul id="players"></ul>
   </div>
 
-  <button onclick="alert('Restart serwera...')">Restart serwera</button>
-  <button onclick="alert('Zatrzymywanie serwera...')">Zatrzymaj serwer</button>
+  <button id="restartBtn" onclick="action('Restart serwera')">Restart</button>
+  <button id="stopBtn" onclick="action('Stop serwera')">Stop</button>
   <button class="logout" onclick="logout()">Wyloguj</button>
 </div>
 
 <script>
-  function login() {
-    const user = document.getElementById('username').value;
-    const pass = document.getElementById('password').value;
+const users = {
+  "OPszyszo": {password:"15555", role:"Właściciel"},
+  "orzpeter69": {password:".dragonADM.", role:"Head Admin"}
+};
 
-    // Proste dane logowania (do zmiany!)
-    if (user === 'admin' && pass === 'dragon123') {
-      document.getElementById('loginBox').style.display = 'none';
-      document.getElementById('adminPanel').style.display = 'block';
-    } else {
-      alert('Nieprawidłowe dane logowania!');
+let currentUser = null;
+
+function login(){
+  const u = username.value;
+  const p = password.value;
+
+  if(users[u] && users[u].password === p){
+    currentUser = users[u];
+    loginBox.style.display='none';
+    panel.style.display='block';
+    roleBox.innerHTML = `Zalogowano jako: <b>${u}</b> (${currentUser.role})`;
+
+    if(currentUser.role !== "Właściciel"){
+      stopBtn.style.display='none';
     }
-  }
 
-  function logout() {
-    document.getElementById('adminPanel').style.display = 'none';
-    document.getElementById('loginBox').style.display = 'block';
+    startLiveData();
+  } else {
+    alert('Błędne dane');
   }
+}
+
+function logout(){
+  location.reload();
+}
+
+function action(msg){
+  alert(msg);
+}
+
+function startLiveData(){
+  setInterval(()=>{
+    // symulacja statusu
+    const online = Math.floor(Math.random()*50);
+    const tps = (18 + Math.random()*2).toFixed(2);
+
+    document.getElementById('status').innerHTML = `
+      <p>Status: <b style="color:lime">ONLINE</b></p>
+      <p>Gracze: <b>${online}</b></p>
+      <p>TPS: <b>${tps}</b></p>
+    `;
+
+    // fake lista graczy
+    const fakePlayers = ["amongus_pet","orzpeter69","OP_pvp","kuba597","smerfurito"];
+    const list = document.getElementById('players');
+    list.innerHTML = '';
+
+    fakePlayers.slice(0, Math.floor(Math.random()*fakePlayers.length)+1)
+      .forEach(p=>{
+        const li = document.createElement('li');
+        li.textContent = p;
+        list.appendChild(li);
+      });
+
+  },2000);
+}
 </script>
 
 </body>
